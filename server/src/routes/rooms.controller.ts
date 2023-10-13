@@ -9,11 +9,20 @@ export async function httpGetAllRooms(
   return res.status(200).json(data);
 }
 
+export async function httpDeleteDbCollection(
+  req: Express.Request,
+  res: Express.Response
+) {
+  await roomsCollection.collection.drop();
+  return res.status(200).json("db-collection-updated");
+}
+
 export async function createRoom(sessionId: string) {
   try {
-    // await roomsCollection.collection.drop();
-    await roomsCollection.create({ id: sessionId, tenants: [sessionId] });
-    console.log(sessionId, "session id");
+    return await roomsCollection.create({
+      roomId: sessionId,
+      tenants: [],
+    });
   } catch (err) {
     console.log(err);
   }
@@ -22,15 +31,23 @@ export async function createRoom(sessionId: string) {
 export async function joinRoom(sessionId: string, roomId: string) {
   try {
     const findRoom = await roomsCollection.findOne({
-      id: roomId,
+      roomId: roomId,
     });
-    const updatedRoom = {
-      id: findRoom.id,
-      tenants: [...findRoom.tenants, sessionId],
-    };
-    await roomsCollection.updateOne(updatedRoom);
-    console.log(findRoom, "session id");
-    // await roomsCollection.collection.drop();
+
+    if (findRoom) {
+      const updatedRoom = {
+        roomId: findRoom.roomId,
+        tenants: [...findRoom.tenants, sessionId],
+      };
+
+      await roomsCollection.findByIdAndUpdate(
+        { _id: findRoom._id },
+        updatedRoom,
+        { upsert: true }
+      );
+      return updatedRoom;
+      // await roomsCollection.collection.drop();
+    }
   } catch (err) {
     console.log(err);
   }
@@ -39,16 +56,22 @@ export async function joinRoom(sessionId: string, roomId: string) {
 export async function leaveRoom(sessionId: string, roomId: string) {
   try {
     const findRoom = await roomsCollection.findOne({
-      id: roomId,
+      roomId,
     });
-    const newTenants = findRoom.tenants.filter((r) => r !== sessionId);
-    const updatedRoom = {
-      id: findRoom.id,
-      tenants: [...newTenants],
-    };
-    await roomsCollection.updateOne(updatedRoom);
-    console.log(findRoom, "session id");
-    // await roomsCollection.collection.drop();
+
+    if (findRoom) {
+      const newTenants = findRoom.tenants.filter((r) => r !== sessionId);
+      const updatedRoom = {
+        roomId: findRoom.roomId,
+        tenants: [...newTenants],
+      };
+      await roomsCollection.findByIdAndUpdate(
+        { _id: findRoom._id },
+        updatedRoom,
+        { upsert: true }
+      );
+      return updatedRoom;
+    }
   } catch (err) {
     console.log(err);
   }

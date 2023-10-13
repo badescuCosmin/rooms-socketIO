@@ -4,4 +4,4 @@ const URL =
     ? "http://localhost:3000"
     : "http://localhost:3000";
 
-export const socket = io(URL, { withCredentials: true });
+export const socket = io(URL, { withCredentials: false });

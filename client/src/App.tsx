@@ -1,10 +1,11 @@
-import "./App.css";
+import { Dashboard } from "./components/dashboard";
+import { RoomsContextProvider } from "./context/roomsContext";
 
 function App() {
   return (
-    <>
-      <h1>Rooms app</h1>
-    </>
+    <RoomsContextProvider>
+      <Dashboard />
+    </RoomsContextProvider>
   );
 }
 

@@ -1,33 +1,36 @@
 import { Server } from "socket.io";
+import { v4 } from "uuid";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
-import { createRoom, joinRoom } from "./routes/rooms.controller";
+import { createRoom, joinRoom, leaveRoom } from "./routes/rooms.controller";
 import roomsCollection from "./models/rooms.model";
 
 export function listen(
   io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>
 ) {
-  io.on("connection", (socket) => {
-    // createRoom(socket.id);
-    joinRoom(socket.id, "d-KbIR_OJ8bEmGe-AAAB");
+  io.on("connection", async (socket) => {
+    console.log("connected");
+    const rooms = await roomsCollection.find();
+
+    io.emit("ready", rooms);
+
     socket.on("disconnect", () => {
       console.log("user disconnected");
     });
 
-    io.on("create-room", async () => {
-      socket.join(socket.id);
-      createRoom(socket.id);
-      const rooms = await roomsCollection.find();
-      io.emit("create-room", rooms);
+    socket.on("create-room", async () => {
+      const room = await createRoom(v4());
+      io.emit("create-room", room);
     });
 
-    io.on("join-room", async () => {
-      socket.join(socket.id);
-      const rooms = await roomsCollection.find();
-      // io.to(msg.id).emit("join-room", [...rooms]);
+    socket.on("join-room", async (roomId: string) => {
+      const room = await joinRoom(socket.id, roomId);
+      socket.join(roomId);
+      io.to(roomId).emit("join-room", room);
     });
 
-    io.on("leave-room", () => {
-      // io.to(msg.id).emit("join-room", [...rooms]);
+    socket.on("leave-room", async (roomId: string) => {
+      const room = await leaveRoom(socket.id, roomId);
+      io.to(roomId).emit("leave-room", room);
     });
   });
 }

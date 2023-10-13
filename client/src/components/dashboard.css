@@ -1,0 +1,35 @@
+.root {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.card {
+  height: 400px;
+  width: 400px;
+  border: 2px solid grey;
+}
+
+.card-wrapper {
+  display: flex;
+  gap: 30px;
+}
+
+p {
+  margin: 0;
+}
+
+button {
+  margin-bottom: 10px;
+}
+
+.leave-btn {
+  margin-left: 20px;
+}
+
+.add-btn {
+  font-size: 25px;
+  margin-bottom: 150px;
+}

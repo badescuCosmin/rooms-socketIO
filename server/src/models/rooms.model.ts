@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const roomsSchema = new mongoose.Schema({
-  id: {
+  roomId: {
     type: String,
     require: true,
   },
